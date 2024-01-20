@@ -11,11 +11,12 @@
     "tauri": "tauri"
   },
   "devDependencies": {
+    "@nuxt/ui": "^2.12.3",
     "@pinia/nuxt": "latest",
+    "@tauri-apps/api": "^1.5.3",
     "@tauri-apps/cli": "^1.5.9",
     "nuxt": "^3.9.3",
     "vue": "^3.4.14",
-    "vue-router": "^4.2.5",
-    "vuetify-nuxt-module": "latest"
+    "vue-router": "^4.2.5"
   }
 }
