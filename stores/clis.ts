@@ -8,7 +8,7 @@ export const useCliStore = defineStore('cli', () => {
   async function checkAwsCli() {
     try {
       const isInstalled = await invoke('check_aws_cli_installed')
-      console.log('AWS CLI is installed:', isInstalled);
+      awsCliInstalled.value = isInstalled as boolean
     } catch (error) {
       console.error('Error checking AWS CLI installation:', error)
     }
