@@ -26,4 +26,4 @@ You may use npm or yarn if that suits your needs but make sure to update `src-ta
 - https://nuxt.com/ - non ssr app.
 - https://ui.nuxt.com/ - Nuxt Tailwind UI integration with components like vuetify
 - https://pinia.vuejs.org/ - State management
-- https://tauri.app/ builds the view (web view) and handles backend commands (low level)
+- https://beta.tauri.app/ - builds the view (web view) and handles backend commands (low level)
