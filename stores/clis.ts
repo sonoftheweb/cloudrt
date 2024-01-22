@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/core'
 
 export const useCliStore = defineStore('cli', () => {
   const awsCliInstalled = ref<boolean>(false)

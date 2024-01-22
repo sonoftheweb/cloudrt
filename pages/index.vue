@@ -1,5 +1,17 @@
 <script lang="ts" setup>
 const projects = ref()
+const cliStore = useCliStore()
+const notificationStore = useNotificationsStore()
+
+onMounted(() => {
+  cliStore.checkAwsCli().then(() => {
+    notificationStore.fireSystemNotification({
+      title: cliStore.awsCliInstalled ? 'AWS CLI found' : 'AWS CLI missing',
+      body: cliStore.awsCliInstalled ? 'Has AWS' : 'No AWS',
+    })
+    console.log(cliStore.awsCliInstalled)
+  })
+})
 </script>
 
 <template>

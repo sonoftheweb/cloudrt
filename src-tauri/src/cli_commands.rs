@@ -2,7 +2,7 @@ use tauri::command;
 
 #[command]
 pub async fn check_aws_cli_installed() -> Result<bool, String> {
-    let (command, args) = if cfg!(target_os = "windows") {
+  let (command, args) = if cfg!(target_os = "windows") {
         ("aws", vec!["--version"])
     } else {
         ("which", vec!["aws"])
