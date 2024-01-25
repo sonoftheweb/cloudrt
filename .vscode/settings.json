@@ -1,3 +1,4 @@
 {
-  "prettier.configPath": "./.prettierrc"
+  "prettier.configPath": "./.prettierrc",
+  "rust-analyzer.linkedProjects": ["./src-tauri/Cargo.toml"]
 }

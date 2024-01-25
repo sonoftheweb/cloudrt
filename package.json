@@ -13,7 +13,8 @@
   "dependencies": {
     "@tauri-apps/api": "next",
     "@tauri-apps/plugin-notification": "^2.0.0-alpha.5",
-    "@tauri-apps/plugin-shell": "^2.0.0-alpha.3"
+    "@tauri-apps/plugin-shell": "^2.0.0-alpha.3",
+    "@tauri-apps/plugin-sql": "^2.0.0-alpha.5"
   },
   "devDependencies": {
     "@nuxt/ui": "^2.12.3",
