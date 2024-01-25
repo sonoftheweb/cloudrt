@@ -1,9 +1,13 @@
 <script lang="ts" setup>
+import { useAppStore } from '~/stores/app'
+
 const projects = ref()
 const cliStore = useCliStore()
+const appStore = useAppStore()
 const notificationStore = useNotificationsStore()
 
 onMounted(() => {
+  console.log(appStore.appPath)
   cliStore.checkAwsCli().then(() => {
     notificationStore.fireSystemNotification({
       title: cliStore.awsCliInstalled ? 'AWS CLI found' : 'AWS CLI missing',
