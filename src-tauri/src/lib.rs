@@ -5,6 +5,7 @@ mod db_migrations;
 pub fn run() {
     let migrations = db_migrations::get_migrations();
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
