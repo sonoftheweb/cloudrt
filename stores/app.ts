@@ -3,6 +3,10 @@ import { defineStore } from 'pinia'
 
 export const useAppStore = defineStore('api', () => {
   const appPath = ref<string | null>(null)
+  const slideOverConfig = ref<{ show: boolean; component: Object | null }>({
+    show: false,
+    component: null,
+  })
 
   async function fetchAppDirectoryPath() {
     try {
@@ -12,8 +16,25 @@ export const useAppStore = defineStore('api', () => {
     }
   }
 
+  function showSlideOver(component: Object) {
+    slideOverConfig.value = {
+      show: true,
+      component: markRaw(component),
+    }
+  }
+
+  function hideSlideOver() {
+    slideOverConfig.value = {
+      show: false,
+      component: null,
+    }
+  }
+
   return {
     appPath,
+    slideOverConfig,
+    showSlideOver,
+    hideSlideOver,
     fetchAppDirectoryPath,
   }
 })
