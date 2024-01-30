@@ -3,16 +3,24 @@ export interface DbVendor {
   vendor_name: string
 }
 
-export interface VendorSettings {
+export interface GCPVendorSettings {
   access_key: string
   secret: string
 }
 
-export interface GCPVendorSettings extends VendorSettings {}
-
-export interface AWSVendorSettings extends VendorSettings {
+export interface AWSVendorSettings {
+  access_key: string
+  secret: string
   default_zone: string
   output?: 'json' | 'text' | 'table'
 }
 
-export interface AzureVendorSettings extends VendorSettings {}
+export interface AzureVendorSettings {
+  access_key: string
+  secret: string
+}
+
+export type VendorSettings =
+  | AWSVendorSettings
+  | GCPVendorSettings
+  | AzureVendorSettings

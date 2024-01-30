@@ -1,16 +1,92 @@
 import { defineStore } from 'pinia'
 import type { NewProject, Project } from '~/types/project'
 import type { DbVendor } from '~/types/vendor'
+import mitt from 'mitt'
 
 export const useProjectsStore = defineStore('projects', () => {
+  const emitter = mitt()
+
   const { database } = useDbStore()
   const { fireSystemNotification } = useNotificationsStore()
 
   const projects = ref<Project[]>([])
+  const selectedProject = ref<Project | null>(null)
 
-  async function getAllProjects() {
-    const result = await database?.select('select * from Projects')
-    projects.value = result as Project[]
+  async function getAllProjects(): Promise<void> {
+    const result = await database?.select(
+      'SELECT Projects.*, Vendors.* FROM Projects JOIN Vendors ON Projects.vendor_id = Vendors.vendor_id',
+    )
+
+    if (result) {
+      const formattedResult = (result as Project[]).map((row: any) => {
+        const project = {
+          project_id: row.project_id,
+          project_name: row.project_name,
+          project_key: row.project_key,
+          project_description: row.project_description,
+          project_settings: row.project_settings,
+        }
+        const vendor = {
+          vendor_id: row.vendor_id,
+          vendor_name: row.vendor_name,
+        }
+        return { ...project, vendor } as Project
+      })
+
+      projects.value = (formattedResult as Project[]).map(
+        (project: Project) => {
+          if (typeof project.project_settings === 'string') {
+            project.project_settings = JSON.parse(project.project_settings)
+          }
+          return project as Project
+        },
+      )
+    }
+  }
+
+  async function getProjectById(id: number): Promise<void> {
+    if (!projects.value.length) {
+      await getAllProjects()
+    }
+    const findProject = projects.value.find(p => p.project_id === id)
+    if (findProject) {
+      selectedProject.value = findProject
+    } else {
+      await fireSystemNotification({
+        title: 'Not found',
+        body: 'Unable to find project selected.',
+      })
+      emitter.emit('back')
+    }
+  }
+
+  function validateSelectedProject(): boolean {
+    if (!selectedProject.value) {
+      return false
+    }
+
+    if (
+      !selectedProject.value.project_name ||
+      !selectedProject.value.project_key ||
+      !selectedProject.value.vendor_id
+    ) {
+      return false
+    }
+
+    const vendorName = selectedProject.value.vendor?.vendor_name
+    if (vendorName) {
+      const vendorKeys = Object.keys(selectedProject.value.project_settings)
+      const requiredKeys = ['aws', 'gcp', 'azure'].includes(vendorName)
+        ? ['access_key', 'secret', 'default_zone']
+        : []
+      for (const key of requiredKeys) {
+        if (!vendorKeys.includes(`${vendorName}_${key}`)) {
+          return false
+        }
+      }
+    }
+
+    return true
   }
 
   async function saveNewProject(data: NewProject) {
@@ -64,9 +140,28 @@ export const useProjectsStore = defineStore('projects', () => {
     })
   }
 
+  async function projectVendor(project: Project): Promise<DbVendor | null> {
+    const result = await database?.select(
+      'select * from Vendors where vendor_id = $1',
+      [project.vendor_id],
+    )
+    if (!result) {
+      await fireSystemNotification({
+        title: 'Invalid vendor',
+        body: `${project.project_name} has invalid vendor. Update or delete the project.`,
+      })
+      return null
+    }
+    return (result as DbVendor[])[0]
+  }
+
   return {
     projects,
+    selectedProject,
     getAllProjects,
+    getProjectById,
     saveNewProject,
+    projectVendor,
+    validateSelectedProject,
   }
 })
