@@ -1,3 +1,4 @@
+import type { GitSettings } from './git'
 import type { DbVendor, VendorSettings } from './vendor'
 
 export interface Project {
@@ -7,6 +8,7 @@ export interface Project {
   project_description: string
   vendor_id: number
   project_settings: string | VendorSettings
+  git_settings: string | GitSettings
   vendor?: DbVendor
 }
 

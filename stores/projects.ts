@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type { NewProject, Project } from '~/types/project'
-import type { DbVendor } from '~/types/vendor'
+import type { DbVendor, VendorSettings } from '~/types/vendor'
 import mitt from 'mitt'
+import type { GitSettings } from '~/types/git'
 
 export const useProjectsStore = defineStore('projects', () => {
   const emitter = mitt()
@@ -25,6 +26,7 @@ export const useProjectsStore = defineStore('projects', () => {
           project_key: row.project_key,
           project_description: row.project_description,
           project_settings: row.project_settings,
+          git_settings: row.git_settings,
         }
         const vendor = {
           vendor_id: row.vendor_id,
@@ -35,9 +37,20 @@ export const useProjectsStore = defineStore('projects', () => {
 
       projects.value = (formattedResult as Project[]).map(
         (project: Project) => {
-          if (typeof project.project_settings === 'string') {
-            project.project_settings = JSON.parse(project.project_settings)
+          const parseSettings = (
+            settings: string | GitSettings | VendorSettings,
+          ) => {
+            if (typeof settings === 'string') {
+              return JSON.parse(settings)
+            }
+            return settings
           }
+          project.project_settings = parseSettings(
+            project.project_settings,
+          ) as VendorSettings
+          project.git_settings = parseSettings(
+            project.git_settings,
+          ) as GitSettings
           return project as Project
         },
       )
@@ -87,6 +100,16 @@ export const useProjectsStore = defineStore('projects', () => {
     }
 
     return true
+  }
+
+  function selectedProjectGit(): GitSettings | null {
+    if (typeof selectedProject.value?.git_settings === 'string') {
+      return JSON.parse(
+        selectedProject.value?.git_settings as string,
+      ) as GitSettings
+    }
+
+    return selectedProject.value?.git_settings as GitSettings | null
   }
 
   async function saveNewProject(data: NewProject) {
@@ -140,6 +163,64 @@ export const useProjectsStore = defineStore('projects', () => {
     })
   }
 
+  async function updateProject(project: Project) {
+    const {
+      git_settings,
+      project_settings,
+      vendor_id,
+      project_id,
+      project_name,
+      project_key,
+      project_description,
+    } = project
+
+    let parsedGitSettings: GitSettings | null = null
+    let parsedProjectSettings: VendorSettings | null = null
+
+    try {
+      parsedGitSettings =
+        typeof git_settings === 'string' && git_settings !== null
+          ? JSON.parse(git_settings)
+          : git_settings
+      parsedProjectSettings =
+        typeof project_settings === 'string'
+          ? JSON.parse(project_settings)
+          : project_settings
+    } catch (error) {
+      await fireSystemNotification({
+        title: 'Invalid settings',
+        body: `Failed to parse settings for project ${project.project_name}.`,
+      })
+      return
+    }
+
+    const updateQuery = `
+      UPDATE Projects SET
+        git_settings = $1,
+        project_settings = $2,
+        vendor_id = $3,
+        project_name = $4,
+        project_key = $5,
+        project_description = $6
+      WHERE project_id = $7
+    `
+
+    await database?.execute(updateQuery, [
+      JSON.stringify(parsedGitSettings),
+      JSON.stringify(parsedProjectSettings),
+      vendor_id,
+      project_name,
+      project_key,
+      project_description,
+      project_id,
+    ])
+
+    await fireSystemNotification({
+      title: 'Project updated',
+      body: `${project.project_name} has been updated.`,
+    })
+  }
+
   async function projectVendor(project: Project): Promise<DbVendor | null> {
     const result = await database?.select(
       'select * from Vendors where vendor_id = $1',
@@ -161,7 +242,9 @@ export const useProjectsStore = defineStore('projects', () => {
     getAllProjects,
     getProjectById,
     saveNewProject,
+    updateProject,
     projectVendor,
     validateSelectedProject,
+    selectedProjectGit,
   }
 })
