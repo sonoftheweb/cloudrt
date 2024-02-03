@@ -6,7 +6,8 @@ import type { NewProject } from '~/types/project'
 
 const appStore = useAppStore()
 const { database } = useDbStore()
-const { saveNewProject, getAllProjects } = useProjectsStore()
+const { getAllProjects } = useProjectsStore()
+const { saveNewProject } = useSelectedProjectStore()
 const { zonesNameRegionArray } = useAws()
 const vendors = ref<DbVendor[]>([])
 
