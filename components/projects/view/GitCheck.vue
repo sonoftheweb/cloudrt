@@ -3,18 +3,23 @@ import type { GitSettings } from '~/types/git'
 import AddRepositoryForm from '~/components/projects/view/AddRepositoryForm.vue'
 
 const selectedProjectStore = useSelectedProjectStore()
-const gitStore = useGitStore()
-const gitSettings = ref<GitSettings | null>(null)
 const { showSlideOver } = useAppStore()
+const gitStore = useGitStore()
+
+const gitSettings = ref<GitSettings | null>(null)
 
 onMounted(() => {
   gitSettings.value = gitStore.selectedProjectGit()
+  if (gitSettings.value) {
+    gitStore.getRepoFileStructure()
+  }
 })
 
 watch(
   () => selectedProjectStore.selectedProject,
   () => {
     gitSettings.value = gitStore.selectedProjectGit()
+    gitStore.getRepoFileStructure()
   },
 )
 </script>
@@ -40,5 +45,3 @@ watch(
     </div>
   </div>
 </template>
-
-<style scoped></style>

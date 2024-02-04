@@ -1,11 +1,7 @@
 <script lang="ts" setup>
 import { object, string, type InferType } from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
-import type {
-  BitbucketApi,
-  GitSettings,
-  GithubApi,
-} from '~/types/git'
+import type { BitbucketApi, GitSettings, GithubApi } from '~/types/git'
 import type { Project } from '~/types/project'
 
 const appStore = useAppStore()
@@ -37,6 +33,7 @@ const dynamicSchema = computed(() => {
       return object({
         name: string().required('Required'),
         owner: string().required(),
+        branch: string().required(),
         repository_name: string().required(),
         personal_access_token: string().required(),
       })
@@ -44,6 +41,8 @@ const dynamicSchema = computed(() => {
       return object({
         name: string().required('Required'),
         owner: string().required(),
+        branch: string().required(),
+        workspace: string().required(),
         repository_name: string().required(),
         app_password: string().required(),
       })
@@ -51,18 +50,24 @@ const dynamicSchema = computed(() => {
       return object({
         name: string().required('Required'),
         owner: string().required('Required'),
+        branch: string().required(),
         repository_name: string().required('Required'),
       })
   }
 })
 
 type Schema = InferType<typeof dynamicSchema.value> & {
+  workspace?: string
+  username?: string
   personal_access_token?: string
   app_password?: string
 }
 const state = reactive({
   name: undefined,
   owner: undefined,
+  branch: undefined,
+  username: undefined,
+  workspace: undefined,
   repository_name: undefined,
   app_password: undefined,
   personal_access_token: undefined,
@@ -79,6 +84,7 @@ function onSubmit(event: FormSubmitEvent<Schema>) {
     case isFoundGithub.value !== undefined:
       settings = {
         owner: validated.owner,
+        branch: validated.branch,
         repository_name: validated.repository_name,
         personal_access_token: validated.personal_access_token,
       } as GithubApi
@@ -86,6 +92,9 @@ function onSubmit(event: FormSubmitEvent<Schema>) {
     default:
       settings = {
         owner: validated.owner,
+        branch: validated.branch,
+        username: validated.username,
+        workspace: validated.workspace,
         repository_name: validated.repository_name,
         app_password: validated.app_password,
       } as BitbucketApi
@@ -143,13 +152,25 @@ const isFormValid = computed(() => {
         <UInput v-model="state.repository_name" />
       </UFormGroup>
       <template v-if="isFoundGithub">
+        <UFormGroup label="Branch" name="branch">
+          <UInput v-model="state.branch" />
+        </UFormGroup>
         <UFormGroup label="Personal access token" name="personal_access_token">
           <UInput v-model="state.personal_access_token" />
         </UFormGroup>
       </template>
       <template v-if="isFoundBitbucket">
+        <UFormGroup label="Username" name="username">
+          <UInput v-model="state.username" />
+        </UFormGroup>
+        <UFormGroup label="Workspace" name="workspace">
+          <UInput v-model="state.workspace" />
+        </UFormGroup>
         <UFormGroup label="App password" name="app_password">
           <UInput v-model="state.app_password" />
+        </UFormGroup>
+        <UFormGroup label="Branch" name="branch">
+          <UInput v-model="state.branch" />
         </UFormGroup>
       </template>
 

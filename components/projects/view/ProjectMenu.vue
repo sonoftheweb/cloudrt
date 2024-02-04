@@ -23,7 +23,11 @@ const links = [
   <div class="flex flex-col pt-5">
     <ULink v-for="(link, index) in links" :key="index" class="mb-5">
       <UTooltip :text="link.label" :popper="{ placement: 'right' }">
-        <UIcon class="text-white" :name="link.icon" />
+        <UIcon
+          class="text-white w-5 h-auto"
+          :name="link.icon"
+          :dynamic="true"
+        />
       </UTooltip>
     </ULink>
   </div>
