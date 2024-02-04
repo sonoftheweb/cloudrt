@@ -38,7 +38,7 @@ export const useGitStore = defineStore('git', () => {
     const gitSettings = selectedProjectGit()
     switch (gitSettings?.name) {
       case 'github':
-        path = `/contents?ref=${gitSettings.settings.branch.toLowerCase()}`
+        path = `/git/trees/${gitSettings.settings.branch.toLowerCase()}?recursive=1`
         break
 
       case 'bitbucket':
@@ -56,7 +56,9 @@ export const useGitStore = defineStore('git', () => {
     console.log(repoFileList.value)
   }
 
-  function gitUrlBuilder(): { url: string; auth: string } | undefined {
+  function gitUrlBuilder():
+    | { url: string; auth: string; accept?: string }
+    | undefined {
     const gitSettings = selectedProjectGit()
     switch (gitSettings?.name) {
       case 'github':
@@ -65,6 +67,7 @@ export const useGitStore = defineStore('git', () => {
           auth: `token ${
             (gitSettings.settings as GithubApi).personal_access_token
           }`,
+          accept: 'application/vnd.github+json',
         }
       case 'bitbucket':
         const base64Credentials = btoa(
@@ -91,11 +94,14 @@ export const useGitStore = defineStore('git', () => {
       return null
     }
 
-    const { data, error } = await useFetch(`${gitConfig.url}${path}`, {
+    const options = {
       headers: {
         Authorization: gitConfig.auth,
+        ...(gitConfig.accept && { Accept: gitConfig.accept }),
       },
-    })
+    }
+
+    const { data, error } = await useFetch(`${gitConfig.url}${path}`, options)
 
     if (error.value) {
       fireSystemNotification({
